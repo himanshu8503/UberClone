@@ -36,17 +36,17 @@ const UserSchema = new mongoose.Schema({
 });
 
 
-UserSchema.method.genrateAuthToken = function(){
-    const token = jwt.sign({_id:this._id},process.env.JWT_SECRET);
+UserSchema.methods.genrateAuthToken = function(){
+    const token = jwt.sign({_id: this._id},process.env.JWT_SECRET);
     return token;
 }
 
-UserSchema.method.comparePassword = function(password){
-    return bcrypt.compare(password,this.Password);
+UserSchema.methods.comparePassword = async function(password){
+    return await bcrypt.compare(password,this.Password);
 }
 
-UserSchema.static.hashPassword = function(password){
-    return bcrypt.hash(password,10);
+UserSchema.statics.hashPassword = async function(password){
+    return await bcrypt.hash(password,10);
 }
 
 const UserModel = mongoose.model('user',UserSchema);
