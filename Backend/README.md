@@ -315,4 +315,80 @@ Cookie: token=<jwt_token>
 - The returned user object excludes the password field for security
 - The user data is retrieved from the token's decoded ID and fetched from the database
 
+---
+
+## User Logout
+
+### Description
+This endpoint allows authenticated users to log out from the Uber Clone application. It invalidates the JWT token by adding it to a blacklist, clears the authentication cookie, and returns a success message.
+
+---
+
+### Endpoint
+```
+ GET users/logout
+```
+
+### Authentication
+**Required**: Yes - JWT token required
+
+**Token Location**: 
+- Cookie: `token`
+- OR Header: `Authorization: Bearer <token>`
+
+### Request Headers
+```
+Authorization: Bearer <jwt_token>
+```
+OR
+
+```
+Cookie: token=<jwt_token>
+```
+
+
+---
+
+## Response
+
+### Success Response (Status Code: 200)
+**Condition**: User successfully logged out and token blacklisted.
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+
+### Error Response (Status Code: 401)
+**Condition**: JWT token verification fails or token is blacklisted.
+
+```json
+{
+  "message": "Unauthorized",
+  "ERROR": "jwt expired" // IF TryCatch FAILD!
+}
+```
+
+---
+
+## Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| **200** | User successfully logged out and token invalidated |
+| **401** | Unauthorized - Invalid, missing, or expired token |
+
+---
+
+## Notes
+- This endpoint requires authentication via JWT token
+- The token can be provided either in cookies or Authorization header
+- The provided token is added to the blacklist collection in the database
+- Blacklisted tokens are automatically removed from the database after 24 hours (TTL index)
+- The authentication cookie is cleared from the client
+- After logout, the token cannot be used for future authenticated requests
+- Any subsequent requests with a blacklisted token will be rejected
+
 
