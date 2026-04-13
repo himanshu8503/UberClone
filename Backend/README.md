@@ -225,3 +225,94 @@ This endpoint allows existing users to log in to the Uber Clone application. It 
 - The token should be used in subsequent authenticated requests
 - The user object returned excludes the password field for security
 - If the email is not found in the database, or the password doesn't match, a generic error message is returned for security reasons
+
+---
+
+## User Profile
+
+### Description
+This endpoint retrieves the authenticated user's profile information. It requires a valid JWT token or authentication cookie, and returns the user's profile data.
+
+---
+
+### Endpoint
+```
+ GET users/profile
+```
+
+### Authentication
+**Required**: Yes - JWT token required
+
+**Token Location**: 
+- Cookie: `token`
+- OR Header: `Authorization: Bearer <token>`
+
+### Request Headers
+```
+Authorization: Bearer <jwt_token>
+```
+OR
+
+```
+Cookie: token=<jwt_token>
+```
+
+---
+
+## Response
+
+### Success Response (Status Code: 200)
+**Condition**: Valid JWT token provided and user is authenticated.
+
+```json
+{
+  "user": {
+    "_id": "ObjectId",
+    "Fullname": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "Email": "john.doe@example.com",
+    "SocketID": null
+  }
+}
+```
+
+### Error Response (Status Code: 401)
+**Condition**: Invalid or missing JWT token.
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+### Error Response (Status Code: 401)
+**Condition**: JWT token verification fails.
+
+```json
+{
+  "message": "Unauthorized",
+  "ERROR": "jwt malformed"
+}
+```
+
+---
+
+## Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| **200** | User profile successfully retrieved |
+| **401** | Unauthorized - Invalid, missing, or expired token |
+
+---
+
+## Notes
+- This endpoint requires authentication via JWT token
+- The token can be provided either in cookies or Authorization header
+- The Authorization header format must be `Bearer <token>`
+- The returned user object excludes the password field for security
+- The user data is retrieved from the token's decoded ID and fetched from the database
+
+
