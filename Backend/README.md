@@ -472,6 +472,7 @@ This endpoint allows captains to register with the Uber Clone application. It va
       "lastname": "Smith"
     },
     "Email": "john.smith@example.com",
+    "Password":"daskbdjkabkjsdbjbjsdb"
     "Vehicle": {
       "color": "white",
       "plate": "XYZ-789",
@@ -575,5 +576,282 @@ This endpoint allows captains to register with the Uber Clone application. It va
 - Vehicle type must be one of: 'car', 'motorcycle', or 'auto'
 - The location (latitude and longitude) is initially null and can be updated as the captain comes online
 - The captain's socket ID is used for real-time communication and will be populated when the captain connects
+
+---
+
+## Captain Login
+
+### Description
+This endpoint allows registered captains to log in to the Uber Clone application. It validates the captain's email and password, verifies the credentials against the database, and returns an authentication token upon successful login.
+
+---
+
+### Endpoint
+```
+ POST captains/login
+```
+
+### Request Body
+```json
+{
+  "email": "string (required, must be valid email format)",
+  "password": "string (required, minimum 6 characters)"
+}
+```
+
+### Required Fields
+| Field | Type | Validation | Description |
+|-------|------|-----------|-------------|
+| `email` | String | Valid email format | Captain's registered email address |
+| `password` | String | Min 6 characters | Captain's password |
+
+### Example Request
+```json
+{
+  "email": "john.smith@example.com",
+  "password": "password123"
+}
+```
+
+---
+
+## Response
+
+### Success Response (Status Code: 200)
+**Condition**: Captain credentials are valid and login is successful.
+
+```json
+{
+  "token": "jwt_token_string",
+  "captain": {
+    "_id": "ObjectId",
+    "Fullname": {
+      "firstname": "John",
+      "lastname": "Smith"
+    },
+    "Email": "john.smith@example.com",
+    "Password":"daskbdjkabkjsdbjbjsdb"
+    "Vehicle": {
+      "color": "white",
+      "plate": "XYZ-789",
+      "capacity": 4,
+      "vehicletype": "car"
+    },
+    "Status": "inactive",
+    "SocketID": null,
+    "location": {
+      "lat": null,
+      "lng": null
+    }
+  }
+}
+```
+
+### Error Response (Status Code: 401)
+**Condition**: Invalid email or password.
+
+```json
+{
+  "message": "Invalid Email or Password"
+}
+```
+
+### Validation Error Response (Status Code: 400)
+**Condition**: Validation fails due to invalid input format.
+
+```json
+{
+  "errors": [
+    {
+      "type": "field",
+      "value": "invalid-email",
+      "msg": "Invalid Email",
+      "path": "email",
+      "location": "body"
+    },
+    {
+      "type": "field",
+      "value": "12345",
+      "msg": "Password must be at least 6 character long",
+      "path": "password",
+      "location": "body"
+    }
+  ]
+}
+```
+
+---
+
+## Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| **200** | Captain successfully logged in |
+| **400** | Bad Request - Validation error (invalid email format, short password, etc.) |
+| **401** | Unauthorized - Invalid email or password |
+
+---
+
+## Notes
+- The password is verified against the stored hashed password using bcrypt
+- A JWT authentication token is generated and returned upon successful login (expires in 24 hours)
+- The token is set as a cookie and should be used in subsequent authenticated requests
+- The captain object returned excludes the password field for security
+- If the email is not found in the database, or the password doesn't match, a generic error message is returned for security reasons
+
+---
+
+## Captain Profile
+
+### Description
+This endpoint retrieves the authenticated captain's profile information. It requires a valid JWT token or authentication cookie, and returns the captain's profile data including vehicle information.
+
+---
+
+### Endpoint
+```
+ GET captains/profile
+```
+
+### Authentication
+**Required**: Yes - JWT token required
+
+**Token Location**: 
+- Cookie: `token`
+- OR Header: `Authorization: Bearer <token>`
+
+
+---
+
+## Response
+
+### Success Response (Status Code: 200)
+**Condition**: Valid JWT token provided and captain is authenticated.
+
+```json
+{
+  "captain": {
+    "_id": "ObjectId",
+    "Fullname": {
+      "firstname": "John",
+      "lastname": "Smith"
+    },
+    "Email": "john.smith@example.com",
+    "Vehicle": {
+      "color": "white",
+      "plate": "XYZ-789",
+      "capacity": 4,
+      "vehicletype": "car"
+    },
+    "Status": "inactive",
+    "SocketID": null,
+    "location": {
+      "lat": null,
+      "lng": null
+    }
+  }
+}
+```
+
+### Error Response (Status Code: 401)
+**Condition**: Invalid or missing JWT token.
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+### Error Response (Status Code: 401)
+**Condition**: JWT token verification fails.
+
+```json
+{
+  "message": "Unauthorized",
+  "ERROR": "Some Unknown Error the Catch Get"
+}
+```
+
+---
+
+## Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| **200** | Captain profile successfully retrieved |
+| **401** | Unauthorized - Invalid, missing, or expired token |
+
+---
+
+## Notes
+- This endpoint requires authentication via JWT token
+- The token can be provided either in cookies or Authorization header
+- The Authorization header format must be `Bearer <token>`
+- The returned captain object includes all profile information and vehicle details
+- The captain data is retrieved from the token's decoded ID and fetched from the database
+
+---
+
+## Captain Logout
+
+### Description
+This endpoint allows authenticated captains to log out from the Uber Clone application. It invalidates the JWT token by adding it to a blacklist, clears the authentication cookie, and returns a success message.
+
+---
+
+### Endpoint
+```
+ GET captains/logout
+```
+
+### Authentication
+**Required**: Yes - JWT token required
+
+**Token Location**: 
+- Cookie: `token`
+- OR Header: `Authorization: Bearer <token>`
+
+---
+
+## Response
+
+### Success Response (Status Code: 200)
+**Condition**: Captain successfully logged out and token blacklisted.
+
+```json
+{
+  "message": "logout successfully"
+}
+```
+
+### Error Response (Status Code: 401)
+**Condition**: JWT token verification fails or token is blacklisted.
+
+```json
+{
+  "message": "Unauthorized",
+  "ERROR": "Some Unknown Error the Catch Get"
+}
+```
+
+---
+
+## Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| **200** | Captain successfully logged out and token invalidated |
+| **401** | Unauthorized - Invalid, missing, or expired token |
+
+---
+
+## Notes
+- This endpoint requires authentication via JWT token
+- The token can be provided either in cookies or Authorization header
+- The provided token is added to the blacklist collection in the database
+- Blacklisted tokens are automatically removed from the database after 24 hours (TTL index)
+- The authentication cookie is cleared from the client
+- After logout, the token cannot be used for future authenticated requests
+- Any subsequent requests with a blacklisted token will be rejected
 
 
