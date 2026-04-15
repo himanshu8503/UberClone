@@ -391,4 +391,189 @@ Cookie: token=<jwt_token>
 - After logout, the token cannot be used for future authenticated requests
 - Any subsequent requests with a blacklisted token will be rejected
 
+---
+
+# CAPTAIN ENDPOINT
+
+## Captain Registration
+
+### Description
+This endpoint allows captains to register with the Uber Clone application. It validates the captain input, hashes the password, creates a new captain record in the database with their vehicle information, and returns an authentication token.
+
+---
+
+### Endpoint
+```
+ POST captains/register
+```
+
+### Request Body
+```json
+{
+  "fullname": {
+    "firstname": "string (required, minimum 3 characters)",
+    "lastname": "string (required, minimum 3 characters)"
+  },
+  "email": "string (required, must be valid email format, unique)",
+  "password": "string (required, minimum 6 characters)",
+  "vehicle": {
+    "color": "string (required, minimum 3 characters)",
+    "plate": "string (required, minimum 3 characters)",
+    "capacity": "number (required, minimum 1)",
+    "vehicletype": "string (required, enum: 'car', 'motorcycle', 'auto')"
+  }
+}
+```
+
+### Required Fields
+| Field | Type | Validation | Description |
+|-------|------|-----------|-------------|
+| `fullname.firstname` | String | Min 3 characters | Captain's first name |
+| `fullname.lastname` | String | Min 3 characters | Captain's last name |
+| `email` | String | Valid email format, Unique | Captain's email address |
+| `password` | String | Min 6 characters | Captain's password (will be hashed with bcrypt) |
+| `vehicle.color` | String | Min 3 characters | Vehicle color |
+| `vehicle.plate` | String | Min 3 characters | Vehicle plate number |
+| `vehicle.capacity` | Number | Min 1 | Vehicle seating capacity |
+| `vehicle.vehicletype` | String | One of: 'car', 'motorcycle', 'auto' | Type of vehicle |
+
+### Example Request
+```json
+{
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Smith"
+  },
+  "email": "john.smith@example.com",
+  "password": "password123",
+  "vehicle": {
+    "color": "white",
+    "plate": "XYZ-789",
+    "capacity": 4,
+    "vehicletype": "car"
+  }
+}
+```
+
+---
+
+## Response
+
+### Success Response (Status Code: 201)
+**Condition**: Captain successfully registered and token generated.
+
+```json
+{
+  "token": "jwt_token_string",
+  "captain": {
+    "_id": "ObjectId",
+    "Fullname": {
+      "firstname": "John",
+      "lastname": "Smith"
+    },
+    "Email": "john.smith@example.com",
+    "Vehicle": {
+      "color": "white",
+      "plate": "XYZ-789",
+      "capacity": 4,
+      "vehicletype": "car"
+    },
+    "Status": "inactive",
+    "SocketID": null,
+    "location": {
+      "lat": null,
+      "lng": null
+    }
+  }
+}
+```
+
+### Error Response (Status Code: 400)
+**Condition**: Captain with this email already exists.
+
+```json
+{
+  "message": "Captain with this email already exist"
+}
+```
+
+### Error Response (Status Code: 400)
+**Condition**: Validation fails due to invalid input.
+
+```json
+{
+  "errors": [
+    {
+      "type": "field",
+      "value": "invalid-email",
+      "msg": "Invalid Email",
+      "path": "email",
+      "location": "body"
+    },
+    {
+      "type": "field",
+      "value": "ab",
+      "msg": "Firstname must be at least 3 character long",
+      "path": "fullname.firstname",
+      "location": "body"
+    },
+    {
+      "type": "field",
+      "value": "12345",
+      "msg": "Firstname must be at least 6 character long",
+      "path": "password",
+      "location": "body"
+    },
+    {
+      "type": "field",
+      "value": "re",
+      "msg": "Color must be at least 3 character long",
+      "path": "vehicle.color",
+      "location": "body"
+    },
+    {
+      "type": "field",
+      "value": "AB",
+      "msg": "PlateNo. must be at least 3 character long",
+      "path": "vehicle.plate",
+      "location": "body"
+    },
+    {
+      "type": "field",
+      "value": "0",
+      "msg": "Capacity must be at least 1",
+      "path": "vehicle.capacity",
+      "location": "body"
+    },
+    {
+      "type": "field",
+      "value": "car",
+      "msg": "Invalid Vehicle Type",
+      "path": "vehicle.vehicletype",
+      "location": "body"
+    }
+  ]
+}
+```
+
+---
+
+## Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| **201** | Captain successfully created and registered |
+| **400** | Bad Request - Captain already exists or validation error |
+
+---
+
+## Notes
+- The password is automatically hashed before being stored in the database using bcrypt
+- A JWT authentication token is generated and returned upon successful registration (expires in 24 hours)
+- The captain's initial status is set to 'inactive'
+- Duplicate email addresses will not be allowed due to unique constraint on the Email field
+- Vehicle type must be one of: 'car', 'motorcycle', or 'auto'
+- The location (latitude and longitude) is initially null and can be updated as the captain comes online
+- The captain's socket ID is used for real-time communication and will be populated when the captain connects
+
 

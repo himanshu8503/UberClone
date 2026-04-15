@@ -3,8 +3,9 @@ dotenv.config();
 const express = require('express') ;
 const cors = require('cors');
 const ConnectDB = require('./db/db');
-const UserRoute = require('./routes/user.routes')
 const cookieParser = require('cookie-parser');
+const UserRoute = require('./routes/user.routes');
+const CaptainRoute = require('./routes/captain.routes');
 
 ConnectDB();
 
@@ -19,6 +20,7 @@ app.get("/",(req,res) => {
     res.send("Hello World")
 });
 app.use("/users",UserRoute);
+app.use('/captains',CaptainRoute);
 
 
 module.exports = app;
