@@ -1,20 +1,33 @@
 import React from 'react'
 import { Route, Routes } from 'react-router'
-import Home from './pages/Home'
+import Start from './pages/Start'
 import UserLogin from './pages/UserLogin'
 import UserSignUp from './pages/UserSignUp'
 import CaptainLogin from './pages/CaptainLogin'
 import CaptainSignUp from './pages/CaptainSignUp'
+import Home from './pages/Home'
+import UserProtectedWrapper from './pages/UserProtectedWrapper'
+import UserLogout from './pages/UserLogout'
 
 const App = () => {
   return (
     <div>
       <Routes>
-          <Route path='/' element= {<Home/>}/>
-          <Route path='/login' element= {<UserLogin/>}/>
-          <Route path='/register' element= {<UserSignUp/>}/>
+          <Route path='/' element= {<Start/>}/>
+          <Route path='/user-login' element= {<UserLogin/>}/>
+          <Route path='/user-register' element= {<UserSignUp/>}/>
           <Route path='/captain-login' element= {<CaptainLogin/>}/>
           <Route path='/captain-register' element={<CaptainSignUp/>} />
+          <Route path='/home' element={
+            <UserProtectedWrapper>
+              <Home/>
+            </UserProtectedWrapper>
+          }/>
+          <Route path='/user-logout' element={
+            <UserProtectedWrapper>
+              <UserLogout/>
+            </UserProtectedWrapper>
+          }/>
       </Routes>
     </div>
   )
